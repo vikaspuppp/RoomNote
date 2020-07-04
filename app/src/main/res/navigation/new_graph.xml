@@ -9,7 +9,7 @@
         android:id="@+id/homeFragment"
         android:name="com.example.roomnoteapp.ui.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/addNote"
             app:destination="@id/addNote" />
@@ -18,9 +18,14 @@
         android:id="@+id/addNote"
         android:name="com.example.roomnoteapp.ui.AddNoteFragment"
         android:label="fragment_add_note"
-        tools:layout="@layout/fragment_add_note" >
+        tools:layout="@layout/fragment_add_note">
         <action
             android:id="@+id/saveNote"
             app:destination="@id/homeFragment" />
+        <argument
+            app:argType="com.example.roomnoteapp.db.Note"
+            android:name="note"
+            app:nullable="true"
+            android:defaultValue="@null"/>
     </fragment>
 </navigation>

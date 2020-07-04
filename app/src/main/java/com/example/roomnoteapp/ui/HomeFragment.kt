@@ -1,16 +1,17 @@
 package com.example.roomnoteapp.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.Navigation
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.roomnoteapp.R
 import com.example.roomnoteapp.db.NoteDatabase
 import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomeFragment : BaseFragment() {
 
@@ -24,18 +25,22 @@ class HomeFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        setAdapter()
         fab_add.setOnClickListener {
             val action = HomeFragmentDirections.addNote()
             Navigation.findNavController(it).navigate(action)
-            getNotes()
         }
     }
 
-    private fun getNotes() {
+    private fun setAdapter() {
+        rv_note.setHasFixedSize(true)
         launch {
-            val deferred = async { NoteDatabase(requireContext()).getNoteDao().getAllNotes() }
-            val list = deferred.await()
-            Log.d("NoteList", "getNotes: ${list.toString()}")
+            context?.let {
+                val list = NoteDatabase(it).getNoteDao().getAllNotes()
+                rv_note.layoutManager =
+                    StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                rv_note.adapter = NoteAdapter(list)
+            }
         }
     }
 }
