@@ -21,7 +21,9 @@
         tools:layout="@layout/fragment_add_note">
         <action
             android:id="@+id/saveNote"
-            app:destination="@id/homeFragment" />
+            app:destination="@id/homeFragment"
+            app:popUpTo="@+id/new_graph"
+            app:popUpToInclusive="true"/>
         <argument
             app:argType="com.example.roomnoteapp.db.Note"
             android:name="note"

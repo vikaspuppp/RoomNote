@@ -1,9 +1,7 @@
 package com.example.roomnoteapp.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.navigation.Navigation
 import com.example.roomnoteapp.R
 import com.example.roomnoteapp.db.Note
@@ -18,6 +16,7 @@ class AddNoteFragment : BaseFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_add_note, container, false)
     }
 
@@ -36,15 +35,15 @@ class AddNoteFragment : BaseFragment() {
             val note = Note(edtTitle, edtNote)
             if (this.note == null) {
                 if (checkValidation(edtTitle, edtNote)) return@setOnClickListener
-                addNote(note)
+                addNote(note, it)
             } else {
                 note.uid = this.note!!.uid
-                updateNote(note)
+                updateNote(note, it)
             }
         }
     }
 
-    private fun updateNote(note: Note) {
+    private fun updateNote(note: Note, view: View) {
         launch {
             val deferred = async { context?.let { NoteDatabase(it).getNoteDao().updateNote(note) } }
             val result = deferred.await()
@@ -54,9 +53,9 @@ class AddNoteFragment : BaseFragment() {
                 } else {
                     "Sorry not able to update"
                 }
-                requireView().snackBar(message)
+                view.snackBar(message)
                 delay(500)
-                moveToHome()
+                moveToHome(view)
             }
         }
     }
@@ -75,7 +74,7 @@ class AddNoteFragment : BaseFragment() {
         return false
     }
 
-    private fun addNote(note: Note) {
+    private fun addNote(note: Note, view: View) {
         launch {
             val deferred = async { context?.let { NoteDatabase(it).getNoteDao().add(note) } }
             val result = deferred.await()
@@ -85,17 +84,42 @@ class AddNoteFragment : BaseFragment() {
                 } else {
                     "Sorry not able to add"
                 }
-                requireView().snackBar(message)
+                view.snackBar(message)
                 delay(500)
-                moveToHome()
+                moveToHome(view)
             }
         }
     }
 
-    private fun moveToHome() {
-        requireView().also {
-            val action = AddNoteFragmentDirections.saveNote()
-            Navigation.findNavController(it).navigate(action)
+    private fun moveToHome(view: View) {
+        view.also {
+            Navigation.findNavController(it).navigate(AddNoteFragmentDirections.saveNote())
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.delete -> if (note != null) {
+                deleteNote()
+            } else {
+                view?.snackBar("Data is not saved in DB.")
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun deleteNote() {
+        launch {
+            context?.let {
+                NoteDatabase(it).getNoteDao().deleteNote(note!!)
+                moveToHome(requireView())
+            }
         }
     }
 
